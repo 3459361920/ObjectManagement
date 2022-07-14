@@ -57,11 +57,11 @@ namespace WebApplication1.Common
         {
             var mail = new MailMessage()
             {
-                From = new MailAddress("saas@inexten.com", "SendDirect邮件发送"),
+                From = new MailAddress("saas@inexten.com", "SendDirect邮件发送"),//发件人，命名
                 Subject="主题"
             };
             mail.To.Add("3459361920@qq.com");//收件人
-            mail.Priority = MailPriority.High;
+            mail.Priority = MailPriority.High;//邮件优先级
             AlternateView alternate = AlternateView.CreateAlternateViewFromString("<h5>星期五，上海的温度打破98年的最高温度。</h5>",Encoding.UTF8, MediaTypeNames.Text.Html);
             mail.AlternateViews.Add(alternate);
             mail.IsBodyHtml = true;
@@ -71,12 +71,12 @@ namespace WebApplication1.Common
             {
                 SmtpClient client = null;
 
-                client = new SmtpClient("smtp.exmail.qq.com");
+                client = new SmtpClient("smtp.exmail.qq.com");//邮件服务名（QQ邮箱：smtp.qq.com，QQ企业邮箱：smtp.exmail.qq.com）
                 client.EnableSsl = true;
                 //client.Port =465;
                 client.UseDefaultCredentials = false;
                 client.DeliveryMethod = SmtpDeliveryMethod.Network;
-                client.Credentials = new NetworkCredential("saas@inexten.com", "Happy@2022");
+                client.Credentials = new NetworkCredential("saas@inexten.com", "Happy@2022");//发件人邮箱，smtp授权码
                 client.Send(mail);
 
                 client.Dispose();

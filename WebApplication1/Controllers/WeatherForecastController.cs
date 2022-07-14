@@ -114,20 +114,25 @@ namespace WebApplication1.Controllers
 
         }
         [HttpPost]
-        public void RedisUse()
+        public string RedisUse()
         {
             var con = ConnectionMultiplexer.Connect("127.0.0.1:6379");
             var db = con.GetDatabase();
             var keyValue = db.StringGetSet("key","value");
-            var keyValue1 = db.StringGetSet("name1","李");
-            var keyValue2 = db.StringGetSet("name2","凌");
-            var name1 = db.StringGet("name1");
-            //var db1 = con.GetDatabase(1);
-
-            var dic =new Dictionary<string,string>();
-            var zz = db.ToString();
+            var keyValue1 = db.StringGetSet("a","a");
+            var keyValue2 = db.StringGetSet("b","b");
+            var name1 = db.StringGet("a");
+            var keys = db.Execute("keys","*");
+            var key = ((RedisKey[])keys).Select(a=>a.ToString());
+            var value = ((RedisValue[])keys).Select(a => a.ToString()) as List<string>;
+            var zz = value[0];
+            var db1 = con.GetDatabase(1);
+            db1.StringGetSet("KEY", "VALUE");
+            db1.StringGetSet("A", "A");
+            db1.StringGetSet("B", "B");
+            var dic = new Dictionary<string, string>();
             con.Close();
-
+            return actioncommon.Json(keys);
             //MemcachedClientConfiguration
         }
         /// <summary>
