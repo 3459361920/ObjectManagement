@@ -4,6 +4,12 @@
         <name>WebApplication1</name>
     </assembly>
     <members>
+        <member name="M:WebApplication1.Common.ActionCommon.SendDirect">
+            <summary>
+            Smtp发送邮件
+            </summary>
+            <returns></returns>
+        </member>
         <member name="F:WebApplication1.Common.Https.httpClientFactory">
             <summary>
             HTTP客户端工厂,更好的管理，会方到池子中（HttpClient的Dispose不会立即释放，）
@@ -21,7 +27,41 @@
         </member>
         <member name="M:WebApplication1.Controllers.WeatherForecastController.GetMember">
             <summary>
-            获取会员
+            sql获取会员
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:WebApplication1.Controllers.WeatherForecastController.SetCache(System.String,System.String,System.Int32)">
+            <summary>
+            添加内存缓存值
+            </summary>
+            <param name="keyName"></param>
+            <param name="value"></param>
+            <param name="seconds"></param>
+            <returns></returns>
+        </member>
+        <member name="M:WebApplication1.Controllers.WeatherForecastController.GetCache(System.String)">
+            <summary>
+            获取内存缓存值
+            </summary>
+            <param name="keyName"></param>
+            <returns></returns>
+        </member>
+        <member name="M:WebApplication1.Controllers.WeatherForecastController.SendDirect">
+            <summary>
+            邮件
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:WebApplication1.Controllers.WeatherForecastController.Action1">
+            <summary>
+            调用获取会员接口
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:WebApplication1.Controllers.WeatherForecastController.RedisUse">
+            <summary>
+            redis简单使用
             </summary>
             <returns></returns>
         </member>
@@ -29,6 +69,18 @@
             <summary>
             导出
             </summary>
+        </member>
+        <member name="M:WebApplication1.Controllers.WeatherForecastController.FileDownload(System.String,System.Int64@,System.Boolean@,System.Int64,System.Char)">
+            <summary>
+            分段读取文件
+            默认每次读取 1M 数据
+            </summary>
+            <param name="sourceFile">文件全路径</param>
+            <param name="readStart">读取的开始位置</param>
+            <param name="contentLeave">是否还有剩下部分</param>
+            <param name="splitFileSize">每次读取的片段长度</param>
+            <param name="separate">分隔符号的ASCII码值</param>
+            <returns></returns>
         </member>
     </members>
 </doc>

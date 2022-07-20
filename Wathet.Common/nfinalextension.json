@@ -1,0 +1,16 @@
+{
+  //是否启用控制器数据模型自动生成功能
+  "ControllerModelGenerate": true,
+  //是否启用Json自动转换C#类功能
+  "JsonModelGenerate": true,
+  //是否启用Razor模板自生成功能
+  "RazorTemplateGenerate": false,
+  //是否支持.net 2.0
+  "SupportNetFramework20": false,
+  //是否启用数据库类模型自动生成功能
+  "SqlModelGenerate": true,
+  //是否启用Razor模板自动解析及提示功能
+  "CopyApplication": false,
+  //复制文件到输出目录
+  "CopyToOutputDirectory": [""]
+}

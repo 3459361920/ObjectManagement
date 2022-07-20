@@ -53,6 +53,10 @@ namespace WebApplication1.Common
         #endregion
 
         #region Email
+        /// <summary>
+        /// Smtp发送邮件
+        /// </summary>
+        /// <returns></returns>
         public bool SendDirect()
         {
             var mail = new MailMessage()
@@ -91,7 +95,19 @@ namespace WebApplication1.Common
             return true;
         }
         #endregion
+
     }
+
+    public static class BaseExtensions
+    {
+        public static int ToInt(this object obj, int defValue)
+        {
+            obj = obj ?? defValue; int def; if (int.TryParse(obj.ToString(), out def)) { return def; }
+            try { var dou = ToDouble(obj, 0); return Convert.ToInt32(dou >= 0 ? Math.Floor(dou) : Math.Ceiling(dou)); } catch { return defValue; }
+        }
+        public static double ToDouble(this object obj, double defValue) { obj = obj ?? defValue; double def; double.TryParse(obj.ToString(), out def); return def == 0 ? defValue : def; }
+    }
+
     public class Https
     {
         /// <summary>

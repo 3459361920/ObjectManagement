@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNet.SignalR.Client.Http;
+﻿using ClassLibrary1;
+using Microsoft.AspNet.SignalR.Client.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using NPOI.HSSF.UserModel;
@@ -53,7 +54,7 @@ namespace WebApplication1.Controllers
             .ToArray();
         }
         /// <summary>
-        /// 获取会员
+        /// sql获取会员
         /// </summary>
         /// <returns></returns>
         [HttpGet]
@@ -64,10 +65,50 @@ namespace WebApplication1.Controllers
             //return new JsonResult(data);
             return Newtonsoft.Json.JsonConvert.SerializeObject(data);
         }
+
+        /// <summary>
+        /// 添加内存缓存值
+        /// </summary>
+        /// <param name="keyName"></param>
+        /// <param name="value"></param>
+        /// <param name="seconds"></param>
+        /// <returns></returns>
+        [HttpGet]
+        public bool SetCache(string keyName,string value,int seconds)
+        {
+            var set = Cache.SetCacheValue(keyName, value, seconds);
+            return set;
+        }
+
+        /// <summary>
+        /// 获取内存缓存值
+        /// </summary>
+        /// <param name="keyName"></param>
+        /// <returns></returns>
+        [HttpGet]
+        public string GetCache(string keyName)
+        {
+            var set = Cache.GetCacheValue(keyName);
+            return set;
+        }
+
+        /// <summary>
+        /// 邮件
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet]
+        public dynamic SendDirect()
+        {
+            return actioncommon.SendDirect();
+        }
+
+        /// <summary>
+        /// 调用获取会员接口
+        /// </summary>
+        /// <returns></returns>
         [HttpGet]
         public string Action1()
         {
-            var send= actioncommon.SendDirect();
             var timestamp = actioncommon.TimeStamp();
             var md5 = actioncommon.MD5(timestamp);
             #region getAPI
@@ -113,26 +154,34 @@ namespace WebApplication1.Controllers
             //webclient.UploadDataTaskAsync("url","post",bytes);
 
         }
-        [HttpPost]
+
+        /// <summary>
+        /// redis简单使用
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet]
         public string RedisUse()
         {
             var con = ConnectionMultiplexer.Connect("127.0.0.1:6379");
             var db = con.GetDatabase();
-            var keyValue = db.StringGetSet("key","value");
-            var keyValue1 = db.StringGetSet("a","a");
-            var keyValue2 = db.StringGetSet("b","b");
+            //var keyValue = db.StringGetSet("key","value");
+            //var keyValue1 = db.StringGetSet("a","a");
+            //var keyValue2 = db.StringGetSet("b","b");
             var name1 = db.StringGet("a");
             var keys = db.Execute("keys","*");
-            var key = ((RedisKey[])keys).Select(a=>a.ToString());
-            var value = ((RedisValue[])keys).Select(a => a.ToString()) as List<string>;
-            var zz = value[0];
-            var db1 = con.GetDatabase(1);
-            db1.StringGetSet("KEY", "VALUE");
-            db1.StringGetSet("A", "A");
-            db1.StringGetSet("B", "B");
+            var key = ((RedisKey[])keys).Select(a=>a.ToString()).ToList();
+            var value = ((RedisValue[])keys).Select(a => a.ToString()).ToList();
+            //var db1 = con.GetDatabase(1);
+            //db1.StringGetSet("KEY", "VALUE");
+            //db1.StringGetSet("A", "A");
+            //db1.StringGetSet("B", "B");
             var dic = new Dictionary<string, string>();
+            for (int i = 0; i < key.Count; i++)
+            {
+                dic.Add(key[i],value[i]);
+            }
             con.Close();
-            return actioncommon.Json(keys);
+            return actioncommon.Json(dic);
             //MemcachedClientConfiguration
         }
         /// <summary>
@@ -189,6 +238,77 @@ namespace WebApplication1.Controllers
 
         }
 
+        /// <summary>
+        /// 分段读取文件
+        /// 默认每次读取 1M 数据
+        /// </summary>
+        /// <param name="sourceFile">文件全路径</param>
+        /// <param name="readStart">读取的开始位置</param>
+        /// <param name="contentLeave">是否还有剩下部分</param>
+        /// <param name="splitFileSize">每次读取的片段长度</param>
+        /// <param name="separate">分隔符号的ASCII码值</param>
+        /// <returns></returns>
+        [HttpGet]
+        public string FileDownload(string sourceFile, ref long readStart, ref bool contentLeave, long splitFileSize = 1024 * 1024 * 1, char separate = '\n')
+        {
+            string resultContent = string.Empty;
+
+            try
+            {
+                using (FileStream stream = new FileStream(@"C:\Users\EDY\Documents\WXWork\1688854799295419\Cache\File\2022-07\work(2).txt", FileMode.Open))
+                {
+                    long FileTotalLength = stream.Length;
+                    if (readStart < FileTotalLength)
+                    {
+                        //创建二进制读取
+                        using (BinaryReader reader = new BinaryReader(stream, Encoding.UTF8))
+                        {
+                            //直接将开始读取的位置设定到基础大小的字节上
+                            //下面要做的是往后找到这一行的结束
+                            reader.BaseStream.Position = splitFileSize + readStart - 1;
+                            //判断当前位置不超过文件总大小
+                            if (reader.BaseStream.Position <= FileTotalLength)
+                            {
+                                //往后挨个儿字符找换行
+                                //这里要说明的是  reader.ReadByte() 方法执行时会自动将 reader.BaseStream.Position 的值向后+1
+                                //网上有些例子执行了 ReadByte 另外还做 Position++  明显是有字符隔掉的
+                                while (reader.BaseStream.Position < FileTotalLength && reader.ReadByte() != separate) { }
+
+                                //这里获得现在找到换行的那个字节上的位置到这次遍历开始的位置中间的字节数量
+                                //+1 是为了把找到的那个换行符也带上
+                                int readWrodCountNow = (int)(reader.BaseStream.Position - readStart);
+                                //把读取的起始位置重置到这次查询的开始位置
+                                reader.BaseStream.Position = readStart;
+                                //把这次读取的内容写入到新文件
+                                resultContent = Encoding.UTF8.GetString(reader.ReadBytes(readWrodCountNow));
+                            }
+                            else
+                            {
+                                reader.BaseStream.Position = readStart;
+                                resultContent = Encoding.UTF8.GetString(reader.ReadBytes(BaseExtensions.ToInt((FileTotalLength - readStart + 1), 0)));
+                            }
+                            //将这次读取到的位置作为下次的起始位置
+                            readStart = reader.BaseStream.Position;
+                            contentLeave = readStart < FileTotalLength;
+                            //去除隐藏字符 byte值为65279  unicode的文件第一个字符会出现
+                            resultContent = resultContent.Replace(((char)65279).ToString(), "");
+                            return resultContent;
+                        }
+                    }
+                    else
+                    {
+                        contentLeave = false;
+                        return "";
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                contentLeave = false;
+                return "";
+            }
+        }
         [HttpPost]
         public string Action2()
         {

@@ -21,7 +21,7 @@ namespace WebApplication1.Controllers
 
 
 
-        public static void Post()
+        /*public static void Post()
         {
             //====================================参数准备
             string httpMethod = "POST";                           //请求方法
@@ -165,7 +165,7 @@ namespace WebApplication1.Controllers
                 httpResponse = (HttpWebResponse)ex.Response;
             }
             return httpResponse;
-        }
+        }*/
 
 
 
