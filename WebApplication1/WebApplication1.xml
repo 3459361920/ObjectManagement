@@ -70,6 +70,11 @@
             导出
             </summary>
         </member>
+        <member name="M:WebApplication1.Controllers.WeatherForecastController.QRCode">
+            <summary>
+            生成二维码
+            </summary>
+        </member>
         <member name="M:WebApplication1.Controllers.WeatherForecastController.FileDownload(System.String,System.Int64@,System.Boolean@,System.Int64,System.Char)">
             <summary>
             分段读取文件

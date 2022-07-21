@@ -1,4 +1,5 @@
 ﻿using ClassLibrary1;
+using Common;
 using Microsoft.AspNet.SignalR.Client.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -237,6 +238,15 @@ namespace WebApplication1.Controllers
             }
 
         }
+        /// <summary>
+        /// 生成二维码
+        /// </summary>
+        [HttpGet]
+        public string QRCode()
+        {
+            return DoQRCode.Create("Null","D:\\Project_Management\\.Core2\\downloag\\",Guid.NewGuid().ToString("N"), "C:\\Users\\EDY\\Pictures\\Camera Roll\\Logo.png",false);
+        }
+
 
         /// <summary>
         /// 分段读取文件

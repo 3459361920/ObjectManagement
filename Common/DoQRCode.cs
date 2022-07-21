@@ -8,8 +8,9 @@ using System.IO.Compression;
 using System.Linq;
 using System.Text;
 using QRCoder;
+using Wathet.Common;
 
-namespace Wathet.Common
+namespace Common
 {
     public class DoQRCode
     {
@@ -35,14 +36,15 @@ namespace Wathet.Common
                     try { new FileInfo(filePath + guid).Delete(); }
                     catch (Exception) { }
                 }
-
+                var name= Path.GetFileName(filePath+ guid);
                 //文件夹不存在就创建  文件存在就删除
                 FileInfo file = new FileInfo(DoPath.GetFullPath(filePath));
                 if (!file.Directory.Exists) { file.Directory.Create(); }
                 if (file.Exists) { file.Delete(); }
 
+                //中间Logo
                 Bitmap logo = null;
-                //if (!string.IsNullOrEmpty(Logo) && new FileInfo(Logo).Exists) { logo = new Bitmap(DoPath.GetFullPath(Logo)); }
+                if (!string.IsNullOrEmpty(Logo) && new FileInfo(Logo).Exists) { logo = new Bitmap(DoPath.GetFullPath(Logo)); }
 
 
                 QRCodeData qrCodeData = new QRCoder.QRCodeGenerator().CreateQrCode(obj, QRCodeGenerator.ECCLevel.Q);
