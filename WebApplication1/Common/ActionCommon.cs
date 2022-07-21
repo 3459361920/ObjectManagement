@@ -105,7 +105,7 @@ namespace WebApplication1.Common
             obj = obj ?? defValue; int def; if (int.TryParse(obj.ToString(), out def)) { return def; }
             try { var dou = ToDouble(obj, 0); return Convert.ToInt32(dou >= 0 ? Math.Floor(dou) : Math.Ceiling(dou)); } catch { return defValue; }
         }
-        public static double ToDouble(this object obj, double defValue) { obj = obj ?? defValue; double def; double.TryParse(obj.ToString(), out def); return def == 0 ? defValue : def; }
+        public static double ToDouble(this object obj, double defValue) { obj = obj ?? defValue; double def; double.TryParse(obj.ToString(), out def); return def == 0 ? defValue : def; } 
     }
 
     public class Https
