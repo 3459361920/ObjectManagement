@@ -59,6 +59,18 @@
             </summary>
             <returns></returns>
         </member>
+        <member name="M:WebApplication1.Controllers.WeatherForecastController.SetRabbitmq">
+            <summary>
+            SetRabbitmq
+            </summary>
+            <param name="args"></param>
+        </member>
+        <member name="M:WebApplication1.Controllers.WeatherForecastController.ReceiveMsg">
+            <summary>
+            GetRabbitmq
+            </summary>
+            <param name="callback"></param>
+        </member>
         <member name="M:WebApplication1.Controllers.WeatherForecastController.RedisUse">
             <summary>
             redis简单使用

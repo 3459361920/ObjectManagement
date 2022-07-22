@@ -5,6 +5,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using NPOI.HSSF.UserModel;
 using NPOI.SS.UserModel;
+using RabbitMQ.Client;
+using RabbitMQ.Client.Events;
 using StackExchange.Redis;
 using System;
 using System.Collections.Generic;
@@ -17,6 +19,7 @@ using System.Net.Http;
 using System.Reflection;
 using System.Security.Cryptography;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using WebApplication1.Common;
 using WebApplication1.DB;
@@ -34,6 +37,7 @@ namespace WebApplication1.Controllers
         private readonly ILogger<WeatherForecastController> logger;
         private readonly ActionCommon actioncommon;
         private readonly Https https;
+
 
         public WeatherForecastController(ILogger<WeatherForecastController> _logger,ActionCommon _actioncommon, Https _https)
         {
@@ -154,6 +158,135 @@ namespace WebApplication1.Controllers
             //webclient.Headers.Add("","");
             //webclient.UploadDataTaskAsync("url","post",bytes);
 
+        }
+
+        /// <summary>
+        /// SetRabbitmq
+        /// </summary>
+        /// <param name="args"></param>
+        [HttpPost]
+        public void SetRabbitmq()
+        {
+            var args = "hello";
+            var factory = new ConnectionFactory();
+            factory.HostName = "localhost";
+            factory.UserName = "guest";
+            factory.Password = "guest";
+
+            using (var connection = factory.CreateConnection())
+            {
+                using (var channel = connection.CreateModel())
+                {
+
+                    bool durable = true;
+                    //声明一个名称为：hello的持久化的队列 
+                    channel.QueueDeclare("hello", durable, false, false, null);
+
+                    string message = ((args.Length > 0) ? string.Join(" ", args) : "Hello HT");
+                    var properties = channel.CreateBasicProperties();
+                    //properties.SetPersistent(true);
+                    properties.Persistent=true;
+
+                    //写入队列
+                    for (int i = 0; i < 100; i++)
+                    {
+                        var body = Encoding.UTF8.GetBytes(message + i);
+                        channel.BasicPublish("", "hello", properties, body);
+                        Console.WriteLine(" Send {0}", message + i);
+                    }
+                }
+            }
+
+        }
+
+        ///// <summary>
+        ///// GetRabbitmq
+        ///// </summary>
+        ///// <param name="args"></param>
+        //[HttpPost]
+        //public void GetRabbitmq(string[] args)
+        //{
+
+        //    var factory = new ConnectionFactory();
+        //    factory.HostName = "localhost";
+        //    factory.UserName = "guest";
+        //    factory.Password = "guest";
+
+        //    using (var connection = factory.CreateConnection())
+        //    {
+        //        using (var channel = connection.CreateModel())
+        //        {
+        //            bool durable = true;
+        //            //在MQ上定义一个持久化队列，名称为：hello，如果名称相同不会重复创建
+        //            channel.QueueDeclare("hello", durable, false, false, null);
+        //            //输入1，那如果接收一个消息，如果没有应答，则客户端不会收到下一个消息
+
+        //            //监听队列
+        //            channel.BasicQos(0, 1, false);
+
+        //            EventingBasicConsumer consumer = new EventingBasicConsumer(channel);
+        //            channel.BasicConsume("hello", false, consumer);
+        //            //获取消息
+        //            while (true)
+        //            {
+        //                var ea = (BasicDeliverEventArgs)consumer.Queue.Dequeue();
+
+        //                var body = ea.Body;
+        //                var message = Encoding.UTF8.GetString(body);
+
+        //                int dots = message.Split('.').Length - 1;
+        //                Thread.Sleep(dots * 1000);
+
+        //                Console.WriteLine("Received {0}", message);
+        //                Console.WriteLine("Done");
+        //                //回复确认
+        //                channel.BasicAck(ea.DeliveryTag, false);
+        //            }
+        //        }
+        //    }
+
+        //}
+
+        private static IConnection connection;
+        public static int _number;
+        /// <summary>
+        /// GetRabbitmq
+        /// </summary>
+        /// <param name="callback"></param>
+        [HttpGet]
+        public string ReceiveMsg()
+        {
+            var factory = new ConnectionFactory();
+            factory.HostName = "localhost";
+            factory.UserName = "guest";
+            factory.Password = "guest";
+
+            if (connection == null || !connection.IsOpen)
+                connection = factory.CreateConnection();
+            IModel _channel = connection.CreateModel();
+            //_channel.QueueDeclare(queue: "hello", durable: true, exclusive: false, autoDelete: true, arguments: null);
+            _channel.QueueDeclare("hello", true, false, false, null);
+            _channel.BasicQos(prefetchSize: 0, prefetchCount: 1, global: false);
+            byte[] body;
+            string message=null;
+            // 创建事件驱动的消费者
+            var consumer = new EventingBasicConsumer(_channel);
+                consumer.Received += (model, ea) =>
+            {
+                 body = ea.Body.ToArray();
+                 message = Encoding.UTF8.GetString(body);
+                BaseExtensions.CW(message);
+                //模拟消息处理需要两秒
+                Thread.Sleep(2000);
+                //显示发送ack确认接收并处理完成消息，只有在前面进行启用显示发送ack机制后才奏效。
+                _channel.BasicAck(ea.DeliveryTag, false);
+            };
+            //指定消费队列,autoAct是否自动确认
+            string result = _channel.BasicConsume(queue: "hello", autoAck: false, consumer: consumer);
+            //connection.Close();
+            return message;
+            //设置后当所有的channel都关闭了连接会自动关闭
+            //connection.AutoClose = true;
         }
 
         /// <summary>
